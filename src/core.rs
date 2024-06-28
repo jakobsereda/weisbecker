@@ -100,11 +100,11 @@ impl CPU {
     }
 
     pub fn tick_timers(&mut self) {
-        if (self.dt > 0) {
+        if self.dt > 0 {
             self.dt -= 1;
         }
 
-        if (self.st > 0) {
+        if self.st > 0 {
             // SOUND
             self.st -= 1;
         } 
@@ -121,19 +121,19 @@ impl CPU {
         let d1 = (op & 0xF000) >> 12;
         let d2 = (op & 0x0F00) >> 8;
         let d3 = (op & 0x00F0) >> 4;
-        let d4 = (op & 0x000F);
+        let d4 = op & 0x000F;
 
         match (d1, d2, d3, d4) {
             // -- NOP --
             (0, 0, 0, 0) => return,
 
             // -- CLS --
-            (0, 0, E, 0) => {
+            (0, 0, 0xE, 0) => {
                 self.display = [false; DISPLAY_WIDTH * DISPLAY_HEIGHT];
             },
 
             // -- RET --
-            (0, 0, E, E) => {
+            (0, 0, 0xE, 0xE) => {
                 self.pc = self.pop();
             }, 
 
@@ -152,7 +152,7 @@ impl CPU {
             (3, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
-                if (self.v_reg[x] == kk) {
+                if self.v_reg[x] == kk {
                     self.pc += 2;
                 }
             },
@@ -161,15 +161,59 @@ impl CPU {
             (4, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
-                if (self.v_reg[x] != kk) {
+                if self.v_reg[x] != kk {
                     self.pc += 2;
                 }
             },
 
             // -- SE Vx, Vy -- 
             (5, _, _, 0) => {
-
+                let x = d2 as usize;
+                let y = d3 as usize;
+                if self.v_reg[x] == self.v_reg[y] {
+                    self.pc += 2;
+                }
             },
+
+            // -- LD Vx, byte --
+            (6, _, _, _) => {
+                let x = d2 as usize;
+                let kk = (op & 0xFF) as u8;
+                self.v_reg[x] = kk;
+            },
+
+            // -- ADD Vx, byte --
+            (7, _, _, _) => {
+                let x = d2 as usize;
+                let kk = (op & 0xFF) as u8;
+                self.v_reg[x] = self.v_reg[x].wrapping_add(kk);
+            },
+
+            // -- LD Vx, Vy --
+            (8, _, _, 0) => {
+                let x = d2 as usize;
+                let y = d3 as usize;
+                self.v_reg[x] = self.v_reg[y];
+            },
+
+            // -- OR Vx, Vy --
+            (8, _, _, 1) => {
+                let x = d2 as usize;
+                let y = d3 as usize;
+                self.v_reg[x] |= self.v_reg[y];
+            },
+
+            // -- AND Vx, Vy --
+            (8, _, _, 2) => {
+                let x = d2 as usize;
+                let y = d3 as usize;
+                self.v_reg[x] &= self.v_reg[y];
+            },
+
+            // -- XOR Vx, Vy --
+            (8, _, _, 3) => {
+                
+            }
 
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
         }
