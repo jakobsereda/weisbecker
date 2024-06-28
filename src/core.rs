@@ -29,7 +29,6 @@ const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 ];
 
-// -- CHIP-8 CPU Specification --
 pub struct CPU {
     // -- memory --
     ram: [u8; RAM_SIZE],
@@ -78,7 +77,6 @@ impl CPU {
         };
 
         cpu.ram[..FONTSET_SIZE].copy_from_slice(&FONTSET);
-
         cpu
     }
 
@@ -94,6 +92,87 @@ impl CPU {
         self.keys = [false; NUM_KEYS];
         self.display = [false; DISPLAY_WIDTH * DISPLAY_HEIGHT];
         self.ram [..FONTSET_SIZE].copy_from_slice(&FONTSET);
+    }
+
+    pub fn tick(&mut self) {
+        let op = self.fetch();
+        self.execute(op);
+    }
+
+    pub fn tick_timers(&mut self) {
+        if (self.dt > 0) {
+            self.dt -= 1;
+        }
+
+        if (self.st > 0) {
+            // SOUND
+            self.st -= 1;
+        } 
+    }
+
+    fn fetch(&mut self) -> u16 {
+        let hi = self.ram[self.pc as usize] as u16;
+        let lo = self.ram[(self.pc + 1) as usize] as u16;
+        self.pc += 2;
+        (hi << 8) | lo
+    }
+
+    fn execute(&mut self, op: u16) {
+        let d1 = (op & 0xF000) >> 12;
+        let d2 = (op & 0x0F00) >> 8;
+        let d3 = (op & 0x00F0) >> 4;
+        let d4 = (op & 0x000F);
+
+        match (d1, d2, d3, d4) {
+            // -- NOP --
+            (0, 0, 0, 0) => return,
+
+            // -- CLS --
+            (0, 0, E, 0) => {
+                self.display = [false; DISPLAY_WIDTH * DISPLAY_HEIGHT];
+            },
+
+            // -- RET --
+            (0, 0, E, E) => {
+                self.pc = self.pop();
+            }, 
+
+            // -- JP addr --
+            (1, _, _, _) => {
+                self.pc = op & 0xFFF;
+            },
+
+            // -- CALL addr --
+            (2, _, _, _) => {
+                self.push(self.pc);
+                self.pc = op & 0xFFF;
+            }, 
+
+            // -- SE Vx, byte --
+            (3, _, _, _) => {
+                let x = d2 as usize;
+                let kk = (op & 0xFF) as u8;
+                if (self.v_reg[x] == kk) {
+                    self.pc += 2;
+                }
+            },
+
+            // -- SNE Vx, byte --
+            (4, _, _, _) => {
+                let x = d2 as usize;
+                let kk = (op & 0xFF) as u8;
+                if (self.v_reg[x] != kk) {
+                    self.pc += 2;
+                }
+            },
+
+            // -- SE Vx, Vy -- 
+            (5, _, _, 0) => {
+
+            },
+
+            (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
+        }
     }
 
     fn push(&mut self, val: u16) {
