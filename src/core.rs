@@ -260,6 +260,11 @@ impl CPU {
                 self.v_reg[0xF] = msb;
             },
 
+            // -- SNE Vx, Vy --
+            (9, _, _, 0) => {
+                
+            },
+
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
         }
     }
