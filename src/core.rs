@@ -252,6 +252,14 @@ impl CPU {
                 self.v_reg[0xF] = if borrow { 0 } else { 1 };
             },
 
+            // -- SHL Vx, {, Vy} --
+            (8, _, _, 0xE) => {
+                let x = d2 as usize;
+                let msb = (self.v_reg[x] >> 7) & 1;
+                self.v_reg[x] <<= 1;
+                self.v_reg[0xF] = msb;
+            },
+
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
         }
     }
@@ -266,4 +274,3 @@ impl CPU {
         self.stack[self.sp as usize]
     }
 }
-
