@@ -212,8 +212,45 @@ impl CPU {
 
             // -- XOR Vx, Vy --
             (8, _, _, 3) => {
-                
-            }
+                let x = d2 as usize;
+                let y = d3 as usize;
+                self.v_reg[x] ^= self.v_reg[y];
+            },
+
+            // -- ADD Vx, Vy --
+            (8, _, _, 4) => {
+                let x = d2 as usize;
+                let y = d3 as usize;
+                let (sum, carry) = self.v_reg[x].overflowing_add(self.v_reg[y]);
+                self.v_reg[x] = sum;
+                self.v_reg[0xF] = if carry { 1 } else { 0 };
+            },
+
+            // -- SUB Vx, Vy --
+            (8, _, _, 5) => {
+                let x = d2 as usize;
+                let y = d3 as usize;
+                let (diff, borrow) = self.v_reg[x].overflowing_sub(self.v_reg[y]);
+                self.v_reg[x] = diff;
+                self.v_reg[0xF] = if borrow { 0 } else { 1 };
+            },
+
+            // -- SHR Vx {, Vy} --
+            (8, _, _, 6) => {
+                let x = d2 as usize;
+                let lsb = self.v_reg[x] & 1;
+                self.v_reg[x] >>= 1;
+                self.v_reg[0xF] = lsb;
+            },
+
+            // -- SUBN Vx, Vy --
+            (8, _, _, 7) => {
+                let x = d2 as usize;
+                let y = d3 as usize;
+                let (diff, borrow) = self.v_reg[y].overflowing_sub(self.v_reg[x]);
+                self.v_reg[x] = diff;
+                self.v_reg[0xF] = if borrow { 0 } else { 1 };
+            },
 
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
         }
