@@ -1,3 +1,5 @@
+use rand::random;
+
 const DISPLAY_WIDTH: usize = 64;
 const DISPLAY_HEIGHT: usize = 32;
 
@@ -262,7 +264,91 @@ impl CPU {
 
             // -- SNE Vx, Vy --
             (9, _, _, 0) => {
-                
+                let x = d2 as usize;
+                let y = d3 as usize;
+                if self.v_reg[x] != self.v_reg[y] {
+                    self.pc += 2;
+                }
+            },
+
+            // -- LD I, addr --
+            (0xA, _, _, _) => {
+                let nnn = op & 0xFFF;
+                self.i_reg = nnn;
+            },
+
+            // -- JP V0, addr --
+            (0xB, _, _, _) => {
+                let nnn = op & 0xFFF;
+                self.pc = nnn + (self.v_reg[0] as u16);
+            },
+
+            // -- RND Vx, byte --
+            (0xC, _, _, _) => {
+                let x = d2 as usize;
+                let kk = (op & 0xFF) as u8;
+                let rand: u8 = random();
+                self.v_reg[x] = rand & kk;
+            },
+
+            // -- DRW Vx, Vy, nibble --
+            (0xD, _, _, _) => {
+
+            },
+
+            // -- SKP Vx --
+            (0xE, _, 9, 0xE) => {
+
+            },
+
+            // -- SKNP Vx --
+            (0xE, _, 0xA, 1) => {
+
+            },
+
+            // -- LD Vx, DT --
+            (0xF, _, 0, 7) => {
+
+            },
+
+            // -- LD Vx, K --
+            (0xF, _, 0, 0xA) => {
+
+            },
+
+            // -- LD DT, Vx --
+            (0xF, _, 1, 5) => {
+
+            },
+
+            // -- LD ST, Vx --
+            (0xF, _, 1, 8) => {
+
+            },
+
+            // -- ADD I, Vx --
+            (0xF, _, 1, 0xE) => {
+
+            },
+
+            // -- LD F, Vx -- 
+            (0xF, _, 2, 9) => {
+
+            },
+
+            // -- LD B, Vx --
+            (0xF, _, 3, 3) => {
+
+            },
+
+            // -- LD [I], Vx --
+            (0xF, _, 5, 5) => {
+
+            },
+
+            // -- LD Vx, [I] --
+            (0xF, _, 6, 5) => {
+
             },
 
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
