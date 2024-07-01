@@ -293,12 +293,14 @@ impl CPU {
 
             // -- DRW Vx, Vy, nibble --
             (0xD, _, _, _) => {
-
+                let x = d2 as usize;
+                let y = d3 as usize;
+                // TODO
             },
 
             // -- SKP Vx --
             (0xE, _, 9, 0xE) => {
-
+                
             },
 
             // -- SKNP Vx --
