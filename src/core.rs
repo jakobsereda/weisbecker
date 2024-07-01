@@ -300,7 +300,7 @@ impl CPU {
 
             // -- SKP Vx --
             (0xE, _, 9, 0xE) => {
-                // TODO
+                
             },
 
             // -- SKNP Vx --
