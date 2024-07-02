@@ -184,7 +184,7 @@ impl CPU {
                 self.v_reg[x] = kk;
             },
 
-            // -- ADD Vx, byte --
+            // -- ADD Vx, byte -- 
             (7, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
@@ -346,12 +346,13 @@ impl CPU {
 
             // -- LD ST, Vx --
             (0xF, _, 1, 8) => {
-
+                let x = d2 as usize;
+                self.st = self.v_reg[x];
             },
 
             // -- ADD I, Vx --
             (0xF, _, 1, 0xE) => {
-
+                let x = d2 as usize;
             },
 
             // -- LD F, Vx -- 
