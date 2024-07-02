@@ -293,34 +293,55 @@ impl CPU {
 
             // -- DRW Vx, Vy, nibble --
             (0xD, _, _, _) => {
-                let x = d2 as usize;
-                let y = d3 as usize;
+                // let x = d2 as usize;
+                // let y = d3 as usize;
                 // TODO
             },
 
             // -- SKP Vx --
             (0xE, _, 9, 0xE) => {
-                
+                let x = d2 as usize;
+                let val = self.v_reg[x] as usize;
+                if self.keys[val] {
+                    self.pc += 2;
+                }
             },
 
             // -- SKNP Vx --
             (0xE, _, 0xA, 1) => {
-
+                let x = d2 as usize;
+                let val = self.v_reg[x] as usize;
+                if !self.keys[val] {
+                    self.pc += 2;
+                }
             },
 
             // -- LD Vx, DT --
             (0xF, _, 0, 7) => {
-
+                let x = d2 as usize;
+                self.v_reg[x] = self.dt;
             },
 
             // -- LD Vx, K --
             (0xF, _, 0, 0xA) => {
-
+                let x = d2 as usize;
+                let mut pressed = false;
+                for i in 0..self.keys.len() {
+                    if self.keys[i] {
+                        self.v_reg[x] = i as u8;
+                        pressed = true;
+                        break;
+                    }
+                }
+                if !pressed {
+                    self.pc -= 2;
+                }
             },
 
             // -- LD DT, Vx --
             (0xF, _, 1, 5) => {
-
+                let x = d2 as usize;
+                self.dt = self.v_reg[x];
             },
 
             // -- LD ST, Vx --
