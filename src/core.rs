@@ -353,6 +353,7 @@ impl CPU {
             // -- ADD I, Vx --
             (0xF, _, 1, 0xE) => {
                 let x = d2 as usize;
+                self.i_reg = self.i_reg.wrapping_add(self.v_reg[x] as u16);
             },
 
             // -- LD F, Vx -- 
