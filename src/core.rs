@@ -274,9 +274,23 @@ impl CPU {
 
             // -- DRW Vx, Vy, nibble --
             (0xD, _, _, _) => {
-                // let x = d2 as usize;
-                // let y = d3 as usize;
-                // TODO
+                let x_coord = self.v_reg[d2 as usize] as u16;
+                let y_coord = self.v_reg[d3 as usize] as u16;
+                let mut flipped = false;
+                for row in 0..=d4 {
+                    let addr = self.i_reg + row;
+                    let data = self.ram[addr as usize];
+                    for column in 0..8 {
+                        if (data & (0b1000_000 >> column)) != 0 {
+                            let x = (x_coord + column) as usize % DISPLAY_WIDTH;
+                            let y = (y_coord + row) as usize % DISPLAY_HEIGHT;
+                            let n = x + DISPLAY_WIDTH * y;
+                            flipped |= self.display[n];
+                            self.display[n] ^= true;
+                        }
+                    }
+                }
+                self.v_reg[0xF] = if flipped { 1 } else { 0 };
             },
 
             // -- SKP Vx --
