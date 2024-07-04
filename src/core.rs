@@ -32,34 +32,15 @@ const FONTSET: [u8; FONTSET_SIZE] = [
 ];
 
 pub struct CPU {
-    // -- memory --
     ram: [u8; RAM_SIZE],
-
-    // -- general purpose registers --
     v_reg: [u8; NUM_REGS],
-
-    // -- index register --
     i_reg: u16,
-
-    // -- delay timer --
     dt: u8,
-
-    // -- sound timer --
     st: u8,
-
-    // -- program counter --
     pc: u16,
-
-    // -- stack pointer --
     sp: u8,
-
-    // -- stack --
     stack: [u16; STACK_SIZE],
-
-    // -- keyboard --
     keys: [bool; NUM_KEYS],
-
-    // -- display (64px x 32px) --
     display: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]
 }
 
@@ -358,22 +339,33 @@ impl CPU {
 
             // -- LD F, Vx -- 
             (0xF, _, 2, 9) => {
-
+                let x = d2 as usize;
+                self.i_reg = (self.v_reg[x] as u16) * 5;
             },
 
             // -- LD B, Vx --
             (0xF, _, 3, 3) => {
-
+                let x = d2 as usize;
+                let vx = self.v_reg[x] as f32;
+                self.ram[self.i_reg as usize] = (vx / 100.0).floor() as u8;
+                self.ram[(self.i_reg + 1) as usize] = ((vx / 10.0) % 10.0).floor() as u8;
+                self.ram[(self.i_reg + 2) as usize] = (vx % 10.0) as u8;
             },
 
             // -- LD [I], Vx --
             (0xF, _, 5, 5) => {
-
+                let x = d2 as usize;
+                for n in 0..=x {
+                    self.ram[(self.i_reg as usize) + n] = self.v_reg[n];
+                }
             },
 
             // -- LD Vx, [I] --
             (0xF, _, 6, 5) => {
-
+                let x = d2 as usize;
+                for n in 0..=x {
+                    self.v_reg[n] = self.ram[(self.i_reg as usize) + n];
+                }
             },
 
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
