@@ -93,6 +93,20 @@ impl CPU {
         } 
     }
 
+    pub fn get_display(&self) -> &[bool] {
+        &self.display
+    }
+
+    pub fn key_press(&mut self, n: usize, state: bool) {
+        self.keys[n] = state;
+    }
+
+    pub fn load(&mut self, data: &[u8]) {
+        let start = START_ADDRESS as usize;
+        let end = (START_ADDRESS as usize) + data.len();
+        self.ram[start..end].copy_from_slice(data);
+    }
+
     fn fetch(&mut self) -> u16 {
         let hi = self.ram[self.pc as usize] as u16;
         let lo = self.ram[(self.pc + 1) as usize] as u16;
