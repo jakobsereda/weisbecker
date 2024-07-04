@@ -1,17 +1,14 @@
 use rand::random;
 
-const DISPLAY_WIDTH: usize = 64;
-const DISPLAY_HEIGHT: usize = 32;
+pub const DISPLAY_WIDTH: usize = 64;
+pub const DISPLAY_HEIGHT: usize = 32;
 
 const RAM_SIZE: usize = 4096;
 const NUM_REGS: usize = 16;
 const STACK_SIZE: usize = 16;
 const NUM_KEYS: usize = 16;
-
 const START_ADDRESS: u16 = 0x200;
-
 const FONTSET_SIZE: usize = 80;
-
 const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
