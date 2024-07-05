@@ -8,6 +8,7 @@ const NUM_REGS: usize = 16;
 const STACK_SIZE: usize = 16;
 const NUM_KEYS: usize = 16;
 const START_ADDRESS: u16 = 0x200;
+
 const FONTSET_SIZE: usize = 80;
 const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -284,7 +285,7 @@ impl CPU {
             (0xC, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
-                let rand: u8 = random();
+                let rand: u8 = random::<u8>();
                 self.v_reg[x] = rand & kk;
             },
 
