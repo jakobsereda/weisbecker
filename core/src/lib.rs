@@ -303,9 +303,9 @@ impl CPU {
                     let data = self.ram[addr as usize];
                     for column in 0..8 {
                         if (data & (0b1000_000 >> column)) != 0 {
-                            let x = (x_coord + column) as usize;
-                            let y = (y_coord + row) as usize;
-                            let n = (x + (DISPLAY_WIDTH * y)) % (DISPLAY_HEIGHT * DISPLAY_WIDTH);
+                            let x = (x_coord + column) as usize % DISPLAY_WIDTH;
+                            let y = (y_coord + row) as usize % DISPLAY_HEIGHT;
+                            let n = x + DISPLAY_WIDTH * y;
                             flipped |= self.display[n];
                             self.display[n] ^= true;
                         }
