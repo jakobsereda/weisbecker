@@ -128,18 +128,21 @@ impl CPU {
 
             // -- RET --
             (0, 0, 0xE, 0xE) => {
-                self.pc = self.pop();
+                let ret = self.pop();
+                self.pc = ret;
             }, 
 
             // -- JP addr --
             (1, _, _, _) => {
-                self.pc = op & 0xFFF;
+                let nnn = op & 0xFFF;
+                self.pc = nnn;
             },
 
             // -- CALL addr --
             (2, _, _, _) => {
+                let nnn = op & 0xFFF;
                 self.push(self.pc);
-                self.pc = op & 0xFFF;
+                self.pc = nnn;
             }, 
 
             // -- SE Vx, byte --
@@ -287,9 +290,10 @@ impl CPU {
             (0xD, _, _, _) => {
                 let x_coord = self.v_reg[d2 as usize] as u16;
                 let y_coord = self.v_reg[d3 as usize] as u16;
+                let n_rows = d4;
                 let mut flipped = false;
-                for row in 0..=d4 {
-                    let addr = self.i_reg + row;
+                for row in 0..n_rows {
+                    let addr = self.i_reg + row as u16;
                     let data = self.ram[addr as usize];
                     for column in 0..8 {
                         if (data & (0b1000_000 >> column)) != 0 {
