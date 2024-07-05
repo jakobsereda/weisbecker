@@ -14,6 +14,7 @@ use sdl2::video::Window;
 const SCALE: u32 = 20;
 const WINDOW_WIDTH: u32 = (DISPLAY_WIDTH as u32) * SCALE;
 const WINDOW_HEIGHT: u32 = (DISPLAY_HEIGHT as u32) * SCALE;
+const TICKS_PER_FRAME: usize = 6;
 
 fn main() {
     let args: Vec<_> = env::args().collect();
@@ -65,7 +66,9 @@ fn main() {
             }
         }
 
-        cpu.tick();
+        for _ in 0..TICKS_PER_FRAME {
+            cpu.tick();
+        }
         cpu.tick_timers();
         draw_screen(&cpu, &mut canvas);
     }

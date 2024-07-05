@@ -1,4 +1,4 @@
-use rand::random;
+use rand::Rng;
 
 pub const DISPLAY_WIDTH: usize = 64;
 pub const DISPLAY_HEIGHT: usize = 32;
@@ -222,8 +222,9 @@ impl CPU {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let (sum, carry) = self.v_reg[x].overflowing_add(self.v_reg[y]);
+                let flag = if carry { 1 } else { 0 };
                 self.v_reg[x] = sum;
-                self.v_reg[0xF] = if carry { 1 } else { 0 };
+                self.v_reg[0xF] = flag;
             },
 
             // -- SUB Vx, Vy --
@@ -231,8 +232,9 @@ impl CPU {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let (diff, borrow) = self.v_reg[x].overflowing_sub(self.v_reg[y]);
+                let flag = if borrow { 0 } else { 1 };
                 self.v_reg[x] = diff;
-                self.v_reg[0xF] = if borrow { 0 } else { 1 };
+                self.v_reg[0xF] = flag;
             },
 
             // -- SHR Vx {, Vy} --
@@ -248,8 +250,9 @@ impl CPU {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let (diff, borrow) = self.v_reg[y].overflowing_sub(self.v_reg[x]);
+                let flag = if borrow { 0 } else { 1 };
                 self.v_reg[x] = diff;
-                self.v_reg[0xF] = if borrow { 0 } else { 1 };
+                self.v_reg[0xF] = flag;
             },
 
             // -- SHL Vx, {, Vy} --
@@ -285,7 +288,7 @@ impl CPU {
             (0xC, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
-                let rand: u8 = random::<u8>();
+                let rand: u8 = rand::thread_rng().gen();
                 self.v_reg[x] = rand & kk;
             },
 
@@ -300,22 +303,27 @@ impl CPU {
                     let data = self.ram[addr as usize];
                     for column in 0..8 {
                         if (data & (0b1000_000 >> column)) != 0 {
-                            let x = (x_coord + column) as usize % DISPLAY_WIDTH;
-                            let y = (y_coord + row) as usize % DISPLAY_HEIGHT;
-                            let n = x + DISPLAY_WIDTH * y;
+                            let x = (x_coord + column) as usize;
+                            let y = (y_coord + row) as usize;
+                            let n = (x + (DISPLAY_WIDTH * y)) % (DISPLAY_HEIGHT * DISPLAY_WIDTH);
                             flipped |= self.display[n];
                             self.display[n] ^= true;
                         }
                     }
                 }
-                self.v_reg[0xF] = if flipped { 1 } else { 0 };
+                if flipped {
+                    self.v_reg[0xF] = 1;
+                } else {
+                    self.v_reg[0xF] = 0;
+                }
             },
 
             // -- SKP Vx --
             (0xE, _, 9, 0xE) => {
                 let x = d2 as usize;
-                let val = self.v_reg[x] as usize;
-                if self.keys[val] {
+                let vx = self.v_reg[x];
+                let key = self.keys[vx as usize];
+                if key {
                     self.pc += 2;
                 }
             },
@@ -323,8 +331,9 @@ impl CPU {
             // -- SKNP Vx --
             (0xE, _, 0xA, 1) => {
                 let x = d2 as usize;
-                let val = self.v_reg[x] as usize;
-                if !self.keys[val] {
+                let vx = self.v_reg[x];
+                let key = self.keys[vx as usize];
+                if !key {
                     self.pc += 2;
                 }
             },
@@ -366,37 +375,44 @@ impl CPU {
             // -- ADD I, Vx --
             (0xF, _, 1, 0xE) => {
                 let x = d2 as usize;
-                self.i_reg = self.i_reg.wrapping_add(self.v_reg[x] as u16);
+                let vx = self.v_reg[x] as u16;
+                self.i_reg = self.i_reg.wrapping_add(vx);
             },
 
             // -- LD F, Vx -- 
             (0xF, _, 2, 9) => {
                 let x = d2 as usize;
-                self.i_reg = (self.v_reg[x] as u16) * 5;
+                let vx = self.v_reg[x] as u16;
+                self.i_reg = vx * 5;
             },
 
             // -- LD B, Vx --
             (0xF, _, 3, 3) => {
                 let x = d2 as usize;
                 let vx = self.v_reg[x] as f32;
-                self.ram[self.i_reg as usize] = (vx / 100.0).floor() as u8;
-                self.ram[(self.i_reg + 1) as usize] = ((vx / 10.0) % 10.0).floor() as u8;
-                self.ram[(self.i_reg + 2) as usize] = (vx % 10.0) as u8;
+                let dig_1 = (vx / 100.0).floor() as u8;
+                let dig_2 = ((vx / 10.0) % 10.0).floor() as u8;
+                let dig_3 = (vx % 10.0) as u8;
+                self.ram[self.i_reg as usize] = dig_1;
+                self.ram[(self.i_reg + 1) as usize] = dig_2;
+                self.ram[(self.i_reg + 2) as usize] = dig_3;
             },
 
             // -- LD [I], Vx --
             (0xF, _, 5, 5) => {
                 let x = d2 as usize;
+                let i = self.i_reg as usize;
                 for n in 0..=x {
-                    self.ram[(self.i_reg as usize) + n] = self.v_reg[n];
+                    self.ram[i + n] = self.v_reg[n];
                 }
             },
 
             // -- LD Vx, [I] --
             (0xF, _, 6, 5) => {
                 let x = d2 as usize;
+                let i = self.i_reg as usize;
                 for n in 0..=x {
-                    self.v_reg[n] = self.ram[(self.i_reg as usize) + n];
+                    self.v_reg[n] = self.ram[i + n];
                 }
             },
 
