@@ -85,7 +85,9 @@ impl CPU {
         }
 
         if self.st > 0 {
-            // SOUND
+            if self.st == 1 {
+                // SOUND
+            }
             self.st -= 1;
         } 
     }
