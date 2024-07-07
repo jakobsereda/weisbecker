@@ -296,13 +296,12 @@ impl CPU {
             (0xD, _, _, _) => {
                 let x_coord = self.v_reg[d2 as usize] as u16;
                 let y_coord = self.v_reg[d3 as usize] as u16;
-                let n_rows = d4;
                 let mut flipped = false;
-                for row in 0..n_rows {
+                for row in 0..d4 {
                     let addr = self.i_reg + row as u16;
-                    let data = self.ram[addr as usize];
+                    let pixels = self.ram[addr as usize];
                     for column in 0..8 {
-                        if (data & (0b1000_000 >> column)) != 0 {
+                        if (pixels & (0b1000_0000 >> column)) != 0 {
                             let x = (x_coord + column) as usize % DISPLAY_WIDTH;
                             let y = (y_coord + row) as usize % DISPLAY_HEIGHT;
                             let n = x + DISPLAY_WIDTH * y;

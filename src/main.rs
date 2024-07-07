@@ -75,11 +75,11 @@ fn main() {
 }
 
 fn draw_screen(cpu: &CPU, canvas: &mut Canvas<Window>) {
-    canvas.set_draw_color(Color::RGB(0, 0, 0));
+    canvas.set_draw_color(Color::RGB(119, 120, 200));
     canvas.clear();
 
     let screen_buffer = cpu.get_display();
-    canvas.set_draw_color(Color::RGB(255, 255, 255));
+    canvas.set_draw_color(Color::RGB(56, 64, 52));
     for (i, pixel) in screen_buffer.iter().enumerate() {
         if *pixel {
             let x = (i % DISPLAY_WIDTH) as u32;
@@ -98,18 +98,18 @@ fn handle_key(key: Keycode) -> Option<usize> {
         Keycode::Num2 => Some(0x2),
         Keycode::Num3 => Some(0x3),
         Keycode::Num4 => Some(0xC),
-        Keycode::Q    => Some(0x4),
-        Keycode::W    => Some(0x5),
-        Keycode::E    => Some(0x6),
-        Keycode::R    => Some(0xD),
-        Keycode::A    => Some(0x7),
-        Keycode::S    => Some(0x8),
-        Keycode::D    => Some(0x9),
-        Keycode::F    => Some(0xE),
-        Keycode::Z    => Some(0xA),
-        Keycode::X    => Some(0x0),
-        Keycode::C    => Some(0xB),
-        Keycode::V    => Some(0xF),
-        _             => None
+        Keycode::Q => Some(0x4),
+        Keycode::W => Some(0x5),
+        Keycode::E => Some(0x6),
+        Keycode::R => Some(0xD),
+        Keycode::A => Some(0x7),
+        Keycode::S => Some(0x8),
+        Keycode::D => Some(0x9),
+        Keycode::F => Some(0xE),
+        Keycode::Z => Some(0xA),
+        Keycode::X => Some(0x0),
+        Keycode::C => Some(0xB),
+        Keycode::V => Some(0xF),
+        _ => None
     }
 }
