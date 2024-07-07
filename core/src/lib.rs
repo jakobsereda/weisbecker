@@ -238,8 +238,9 @@ impl CPU {
             // -- SHR Vx {, Vy} --
             (8, _, _, 6) => {
                 let x = d2 as usize;
+                let y = d3 as usize;
                 let lsb = self.v_reg[x] & 1;
-                self.v_reg[x] >>= 1;
+                self.v_reg[x] = self.v_reg[y] >> 1;
                 self.v_reg[0xF] = lsb;
             },
 
@@ -255,8 +256,9 @@ impl CPU {
             // -- SHL Vx, {, Vy} --
             (8, _, _, 0xE) => {
                 let x = d2 as usize;
+                let y = d3 as usize;
                 let msb = (self.v_reg[x] >> 7) & 1;
-                self.v_reg[x] <<= 1;
+                self.v_reg[x] = self.v_reg[y] << 1;
                 self.v_reg[0xF] = msb;
             },
 
@@ -395,6 +397,7 @@ impl CPU {
                 for n in 0..=x {
                     self.ram[(self.i_reg as usize) + n] = self.v_reg[n];
                 }
+                self.i_reg += 1;
             },
 
             // -- LD Vx, [I] --
@@ -403,6 +406,7 @@ impl CPU {
                 for n in 0..=x {
                     self.v_reg[n] = self.ram[(self.i_reg as usize) + n];
                 }
+                self.i_reg += 1;
             },
 
             (_, _, _, _) => unimplemented!("Unimplemented opcode: {}", op)
