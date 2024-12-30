@@ -122,31 +122,31 @@ impl CPU {
 
         match (d1, d2, d3, d4) {
             // -- NOP --
-            (0, 0, 0, 0) => return,
+            (0x0, 0x0, 0x0, 0x0) => return,
 
             // -- CLS --
-            (0, 0, 0xE, 0) => {
+            (0x0, 0x0, 0xE, 0x0) => {
                 self.display = [false; DISPLAY_WIDTH * DISPLAY_HEIGHT];
             },
 
             // -- RET --
-            (0, 0, 0xE, 0xE) => {
+            (0x0, 0x0, 0xE, 0xE) => {
                 self.pc = self.pop();
             }, 
 
             // -- JP addr --
-            (1, _, _, _) => {
+            (0x1, _, _, _) => {
                 self.pc = op & 0xFFF;
             },
 
             // -- CALL addr --
-            (2, _, _, _) => {
+            (0x2, _, _, _) => {
                 self.push(self.pc);
                 self.pc = op & 0xFFF;
             }, 
 
             // -- SE Vx, byte --
-            (3, _, _, _) => {
+            (0x3, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
                 if self.v_reg[x] == kk {
@@ -155,7 +155,7 @@ impl CPU {
             },
 
             // -- SNE Vx, byte --
-            (4, _, _, _) => {
+            (0x4, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
                 if self.v_reg[x] != kk {
@@ -164,7 +164,7 @@ impl CPU {
             },
 
             // -- SE Vx, Vy -- 
-            (5, _, _, 0) => {
+            (0x5, _, _, 0x0) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 if self.v_reg[x] == self.v_reg[y] {
@@ -173,28 +173,28 @@ impl CPU {
             },
 
             // -- LD Vx, byte --
-            (6, _, _, _) => {
+            (0x6, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
                 self.v_reg[x] = kk;
             },
 
             // -- ADD Vx, byte -- 
-            (7, _, _, _) => {
+            (0x7, _, _, _) => {
                 let x = d2 as usize;
                 let kk = (op & 0xFF) as u8;
                 self.v_reg[x] = self.v_reg[x].wrapping_add(kk);
             },
 
             // -- LD Vx, Vy --
-            (8, _, _, 0) => {
+            (0x8, _, _, 0x0) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 self.v_reg[x] = self.v_reg[y];
             },
 
             // -- OR Vx, Vy --
-            (8, _, _, 1) => {
+            (0x8, _, _, 0x1) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 self.v_reg[x] |= self.v_reg[y];
@@ -202,7 +202,7 @@ impl CPU {
             },
 
             // -- AND Vx, Vy --
-            (8, _, _, 2) => {
+            (0x8, _, _, 0x2) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 self.v_reg[x] &= self.v_reg[y];
@@ -210,7 +210,7 @@ impl CPU {
             },
 
             // -- XOR Vx, Vy --
-            (8, _, _, 3) => {
+            (0x8, _, _, 0x3) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 self.v_reg[x] ^= self.v_reg[y];
@@ -218,7 +218,7 @@ impl CPU {
             },
 
             // -- ADD Vx, Vy --
-            (8, _, _, 4) => {
+            (0x8, _, _, 0x4) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let (sum, carry) = self.v_reg[x].overflowing_add(self.v_reg[y]);
@@ -227,7 +227,7 @@ impl CPU {
             },
 
             // -- SUB Vx, Vy --
-            (8, _, _, 5) => {
+            (0x8, _, _, 0x5) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let (diff, borrow) = self.v_reg[x].overflowing_sub(self.v_reg[y]);
@@ -236,7 +236,7 @@ impl CPU {
             },
 
             // -- SHR Vx {, Vy} --
-            (8, _, _, 6) => {
+            (0x8, _, _, 0x6) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let lsb = self.v_reg[x] & 1;
@@ -245,7 +245,7 @@ impl CPU {
             },
 
             // -- SUBN Vx, Vy --
-            (8, _, _, 7) => {
+            (0x8, _, _, 0x7) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let (diff, borrow) = self.v_reg[y].overflowing_sub(self.v_reg[x]);
@@ -254,7 +254,7 @@ impl CPU {
             },
 
             // -- SHL Vx, {, Vy} --
-            (8, _, _, 0xE) => {
+            (0x8, _, _, 0xE) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 let msb = (self.v_reg[x] >> 7) & 1;
@@ -263,7 +263,7 @@ impl CPU {
             },
 
             // -- SNE Vx, Vy --
-            (9, _, _, 0) => {
+            (0x9, _, _, 0x0) => {
                 let x = d2 as usize;
                 let y = d3 as usize;
                 if self.v_reg[x] != self.v_reg[y] {
@@ -316,7 +316,7 @@ impl CPU {
             },
 
             // -- SKP Vx --
-            (0xE, _, 9, 0xE) => {
+            (0xE, _, 0x9, 0xE) => {
                 let x = d2 as usize;
                 let vx = self.v_reg[x];
                 let key = self.keys[vx as usize];
@@ -326,7 +326,7 @@ impl CPU {
             },
 
             // -- SKNP Vx --
-            (0xE, _, 0xA, 1) => {
+            (0xE, _, 0xA, 0x1) => {
                 let x = d2 as usize;
                 let key = self.keys[self.v_reg[x] as usize];
                 if !key {
@@ -335,13 +335,13 @@ impl CPU {
             },
 
             // -- LD Vx, DT --
-            (0xF, _, 0, 7) => {
+            (0xF, _, 0x0, 0x7) => {
                 let x = d2 as usize;
                 self.v_reg[x] = self.dt;
             },
 
             // -- LD Vx, K --
-            (0xF, _, 0, 0xA) => {
+            (0xF, _, 0x0, 0xA) => {
                 let x = d2 as usize;
                 let mut pressed = false;
                 for i in 0..self.keys.len() {
@@ -357,33 +357,33 @@ impl CPU {
             },
 
             // -- LD DT, Vx --
-            (0xF, _, 1, 5) => {
+            (0xF, _, 0x1, 0x5) => {
                 let x = d2 as usize;
                 self.dt = self.v_reg[x];
             },
 
             // -- LD ST, Vx --
-            (0xF, _, 1, 8) => {
+            (0xF, _, 0x1, 0x8) => {
                 let x = d2 as usize;
                 self.st = self.v_reg[x];
             },
 
             // -- ADD I, Vx --
-            (0xF, _, 1, 0xE) => {
+            (0xF, _, 0x1, 0xE) => {
                 let x = d2 as usize;
                 let vx = self.v_reg[x] as u16;
                 self.i_reg = self.i_reg.wrapping_add(vx);
             },
 
             // -- LD F, Vx -- 
-            (0xF, _, 2, 9) => {
+            (0xF, _, 0x2, 0x9) => {
                 let x = d2 as usize;
                 let vx = self.v_reg[x] as u16;
                 self.i_reg = vx * 5;
             },
 
             // -- LD B, Vx --
-            (0xF, _, 3, 3) => {
+            (0xF, _, 0x3, 0x3) => {
                 let x = d2 as usize;
                 let vx = self.v_reg[x] as f32;
                 self.ram[self.i_reg as usize] = (vx / 100.0).floor() as u8;
@@ -392,7 +392,7 @@ impl CPU {
             },
 
             // -- LD [I], Vx --
-            (0xF, _, 5, 5) => {
+            (0xF, _, 0x5, 0x5) => {
                 let x = d2 as usize;
                 for n in 0..=x {
                     self.ram[(self.i_reg as usize) + n] = self.v_reg[n];
@@ -401,7 +401,7 @@ impl CPU {
             },
 
             // -- LD Vx, [I] --
-            (0xF, _, 6, 5) => {
+            (0xF, _, 0x6, 0x5) => {
                 let x = d2 as usize;
                 for n in 0..=x {
                     self.v_reg[n] = self.ram[(self.i_reg as usize) + n];
