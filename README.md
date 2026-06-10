@@ -2,7 +2,7 @@
 
 A Chip-8 emulator I built to become more comfortable with Rust and programming virtual machines.
 
-It's still a little bit buggy, but it passes most (not all) common tests for Chip-8 emulators, and can run most roms with varying levels of success.
+It passes common, openly available test suites for Chip-8 emulators, and can run most roms.
 
 If you want to try it out, clone this repo, install [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) and start the emulator by running `cargo run -- <ROM_PATH>`. There are some test roms provided in the `roms` folder of this repo (all of which *are* legal to distribute freely). 
 
